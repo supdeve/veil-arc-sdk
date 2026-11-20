@@ -19,15 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-Third-party notices
-
-This package depends on:
-
-* ethers 6.17.0 - MIT License - https://github.com/ethers-io/ethers.js
-* jose 6.1.3 - MIT License - https://github.com/panva/jose
-
-It uses the Node.js runtime's own SQLite binding (`node:sqlite`), which is
-distributed under the MIT License with Node.js.
