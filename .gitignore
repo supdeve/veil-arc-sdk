@@ -1,0 +1,21 @@
+# build output
+dist/
+
+# the packed release archive: it is produced by `npm run pack:release`
+*.tgz
+
+# dependencies
+node_modules/
+
+# local environment
+.env
+.env.*
+*.local
+
+# logs and coverage
+*.log
+coverage/
+
+# editor and OS noise
+.DS_Store
+Thumbs.db

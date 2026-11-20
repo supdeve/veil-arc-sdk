@@ -1,0 +1,11 @@
+{
+  "entries": [
+    {
+      "id": "agent:provider",
+      "address": "0x0000000000000000000000000000000000000002",
+      "encryptionKey": {},
+      "binding": "REPLACE_WITH_THE_PROVIDER_SIGNED_KEY_BINDING",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    }
+  ]
+}

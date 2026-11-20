@@ -1,0 +1,38 @@
+name: Stage the npm release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  # the OIDC token is what npm trusted publishing uses; there is no long-lived
+  # publishing token anywhere in this repository
+  id-token: write
+
+jobs:
+  stage:
+    runs-on: ubuntu-latest
+    # the environment name must match the one in the npm trusted publisher
+    environment: npm
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+          # never cache in a release build
+          package-manager-cache: false
+      # npm trusted publishing and staged publishing need npm 11.5.1 / 11.15.0
+      # or newer; the version bundled with Node 24 is older
+      - run: npm install -g npm@latest
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+      - run: npm run pack:release
+      # --strict refuses to publish while a placeholder is still in the manifest
+      - run: node scripts/verify-package.mjs --strict
+      # the package is **staged**, not published: a maintainer reviews it and
+      # approves it with two-factor authentication before it becomes public
+      - run: npm stage publish

@@ -1,0 +1,75 @@
+{
+  "name": "veil-arc-sdk",
+  "version": "0.3.0",
+  "description": "Veil: encrypted bilateral agent agreements with conditional USDC settlement on Arc.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./store": {
+      "types": "./dist/store.d.ts",
+      "import": "./dist/store.js",
+      "default": "./dist/store.js"
+    },
+    "./monitor": {
+      "types": "./dist/monitor.d.ts",
+      "import": "./dist/monitor.js",
+      "default": "./dist/monitor.js"
+    },
+    "./tools": {
+      "types": "./dist/tools.d.ts",
+      "import": "./dist/tools.js",
+      "default": "./dist/tools.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "NOTICE.md",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=22.5"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+    "pack:release": "node scripts/pack.mjs",
+    "verify:package": "node scripts/verify-package.mjs",
+    "test": "tsx --test tests/*.test.ts"
+  },
+  "dependencies": {
+    "ethers": "6.17.0",
+    "jose": "6.1.3"
+  },
+  "keywords": [
+    "veil",
+    "arc",
+    "usdc",
+    "erc-8183",
+    "agentic-commerce",
+    "settlement",
+    "agents"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/supdeve/veil-arc-sdk.git"
+  },
+  "homepage": "https://supdeve.github.io/veil-arc-sdk/",
+  "bugs": {
+    "url": "https://github.com/supdeve/veil-arc-sdk/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

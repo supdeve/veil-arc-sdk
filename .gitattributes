@@ -1,0 +1,5 @@
+# the published sources are LF on every platform
+* text=auto eol=lf
+
+# the release archive is binary and is never committed
+*.tgz binary
