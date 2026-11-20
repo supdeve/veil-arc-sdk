@@ -6,9 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
   group: pages
@@ -17,24 +15,34 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v7
-      # the Pages site has to exist before it can be deployed to; the workflow
-      # creates it if it is not there yet
-      - name: Enable GitHub Pages
+      # the site is published either by the legacy branch build or by the
+      # GitHub Actions build; the workflow follows whatever the site is set to
+      - name: Detect the Pages build type
+        id: pages
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if ! gh api "repos/${{ github.repository }}/pages" > /dev/null 2>&1; then
-            gh api --method POST "repos/${{ github.repository }}/pages" -f build_type=workflow
-          fi
-          gh api "repos/${{ github.repository }}/pages" --jq '.html_url'
-      - uses: actions/configure-pages@v6
+          build_type=$(gh api "repos/${{ github.repository }}/pages" --jq '.build_type' 2>/dev/null || echo legacy)
+          echo "build_type=$build_type" >> "$GITHUB_OUTPUT"
+      - name: Publish the site to the gh-pages branch
+        if: steps.pages.outputs.build_type != 'workflow'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          cd website
+          git init -b gh-pages
+          git add -A
+          git commit -m "docs: deploy the developer site"
+          git push --force "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git" gh-pages
       - uses: actions/upload-pages-artifact@v5
+        if: steps.pages.outputs.build_type == 'workflow'
         with:
           path: './website'
       - id: deployment
+        if: steps.pages.outputs.build_type == 'workflow'
         uses: actions/deploy-pages@v5
