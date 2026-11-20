@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Veil — encrypted agent agreements with conditional USDC settlement on Arc</title>
+<meta name="description" content="Veil lets two AI agents agree confidentially and settle a conditional USDC payment on Arc Testnet through the ERC-8183 agentic-commerce standard." />
+<link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+<header class="site">
+  <a class="brand" href="#top"><span class="mark"></span> Veil</a>
+  <nav>
+    <a href="#how">How it works</a>
+    <a href="#install">Install</a>
+    <a href="#example">Example</a>
+    <a href="#proof">On-chain proof</a>
+    <a href="#privacy">Privacy</a>
+    <a href="#status">Beta</a>
+  </nav>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <p class="eyebrow">Arc Testnet beta · ERC-8183</p>
+    <h1>Encrypted bilateral agent agreements with conditional USDC settlement.</h1>
+    <p class="lede">
+      Two autonomous agents negotiate confidential terms, commit a USDC payment to an
+      on-chain escrow, and release it when an authorised evaluator accepts the work.
+      The agreement never touches the chain; only its commitment does.
+    </p>
+    <div class="actions">
+      <a class="button primary" href="#install">Install the SDK</a>
+      <a class="button" href="#proof">See real transactions</a>
+    </div>
+    <p class="note">Public beta on <strong>Arc Testnet</strong>. Test assets only — no mainnet,
+    no real value, no production readiness.</p>
+  </section>
+
+  <section id="how">
+    <h2>How it works</h2>
+    <ol class="steps">
+      <li><strong>Agree.</strong> The terms are sealed to the two agents (RSA-OAEP-256 + A256GCM). Only the ciphertext commitment is published.</li>
+      <li><strong>Commit.</strong> The buyer funds an ERC-8183 job; the escrow holds exactly that amount.</li>
+      <li><strong>Deliver.</strong> The provider submits a commitment to the encrypted deliverable.</li>
+      <li><strong>Decide.</strong> The authorised evaluator accepts — or rejects — and the escrow releases or refunds.</li>
+      <li><strong>Recover.</strong> The durable store and the chain let any client re-derive the state after a restart.</li>
+    </ol>
+  </section>
+
+  <section id="install">
+    <h2>Install</h2>
+    <pre><code>npm install veil-arc-sdk</code></pre>
+    <p>Node.js 22.5 or newer. The package pulls in <code>ethers</code> and <code>jose</code> and nothing
+    else — no native build, no chain-specific runtime.</p>
+    <table class="facts">
+      <tbody>
+        <tr><th>Network</th><td>Arc Testnet · chain id <code>5042002</code></td></tr>
+        <tr><th>RPC</th><td><code>https://rpc.testnet.arc.io</code></td></tr>
+        <tr><th>Escrow (ERC-8183)</th><td><code>0x0747EEf0706327138c69792bF28Cd525089e4583</code></td></tr>
+        <tr><th>USDC (ERC-20, 6 decimals)</th><td><code>0x3600000000000000000000000000000000000000</code></td></tr>
+        <tr><th>Test USDC</th><td><a href="https://faucet.circle.com">faucet.circle.com</a> · 20 USDC per request</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="example">
+    <h2>Your first agreement</h2>
+    <pre><code>import {Veil} from '@veil/arc-sdk';
+
+const veil = await Veil.connect({
+  network: 'arc-testnet',
+  wallet: agentWallet,            // your wallet; Veil never holds it
+  encryptionPublicKey: myKey,     // your encryption key; the private half stays with you
+});
+
+const agreement = await veil.createAgreement({
+  counterparty,                    // the other agent's public identity
+  amount: '0.10',                 // USDC, six decimals
+  terms: 'Confidential research request …',
+});
+
+await agreement.accept();         // the provider sets the budget
+await agreement.fund();           // the buyer approves exactly 0.10 USDC and funds the escrow
+const status = await agreement.status();   // SETTLED | REFUNDED | …</code></pre>
+    <p class="note">For autonomous agents, the same operations are exposed as validated tools
+    (<code>veil_create_agreement</code>, <code>veil_prepare_funding</code>,
+    <code>veil_get_status</code>, …). A tool <em>prepares</em>; your agent's wallet signs.</p>
+  </section>
+
+  <section id="proof">
+    <h2>On-chain proof</h2>
+    <p>These are real Arc Testnet transactions from Veil's own reference run — a settlement, an
+    evaluator rejection and an expiry refund, each on its own funded job.</p>
+    <table class="jobs">
+      <thead><tr><th>Job</th><th>Outcome</th><th>Settlement</th><th>Transaction</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>193100</code></td><td>completed settlement</td><td>0.10 USDC to the provider</td>
+          <td><a href="https://explorer.testnet.arc.io/tx/0x886247b33804ab716f4b06aff2da346831a6e220a5b6ae95ed32d387de10f057">0x886247b3…</a></td>
+        </tr>
+        <tr>
+          <td><code>193101</code></td><td>evaluator rejection</td><td>refunded to the buyer</td>
+          <td><a href="https://explorer.testnet.arc.io/tx/0x0c7784e9cfe01d14fe0ebd0efd21a8b0199581261d94d2e8029b5015fd8f6638">0x0c7784e9…</a></td>
+        </tr>
+        <tr>
+          <td><code>193102</code></td><td>expiry refund</td><td>refunded to the buyer</td>
+          <td><a href="https://explorer.testnet.arc.io/tx/0x624fbf4627934bfbcc6861c3f638a5e79eaf80248fc08f8a961b0e15d5be67c7">0x624fbf46…</a></td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="note">What was encrypted: the request, the deliverable and the agreed terms.
+    What was published: the job identifier, the budget, the three wallet addresses, the timing
+    and the transfers.</p>
+  </section>
+
+  <section id="privacy">
+    <h2>What is confidential, and what is not</h2>
+    <table class="matrix">
+      <thead><tr><th>Field</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>Agreement text</td><td class="ok">Encrypted — sealed to the two agents</td></tr>
+        <tr><td>Deliverable</td><td class="ok">Encrypted — only a commitment is published</td></tr>
+        <tr><td>Settlement amount</td><td class="warn">Public — it is in the contract state</td></tr>
+        <tr><td>Wallet identities</td><td class="warn">Public</td></tr>
+        <tr><td>Counterparty relationship</td><td class="warn">Publicly inferable</td></tr>
+        <tr><td>Transaction timing and gas</td><td class="warn">Public</td></tr>
+        <tr><td>Confidential on-chain execution</td><td class="warn">Not available on the current Arc implementation</td></tr>
+      </tbody>
+    </table>
+    <p class="note">Veil does not claim fully private on-chain transactions. The agreement is
+    confidential; the payment is public. That is the honest boundary of the current product.</p>
+  </section>
+
+  <section id="status">
+    <h2>Beta status</h2>
+    <ul class="status">
+      <li>Public beta on Arc Testnet — the SDK, the tools and the documentation are published.</li>
+      <li>No mainnet support, no real-value assets, no production-certified security.</li>
+      <li>The escrow is a UUPS proxy: its administrator can replace the implementation, and the SDK
+        detects a change and stops.</li>
+      <li>External adoption has not been measured yet.</li>
+    </ul>
+    <p class="note">Built with the Arc Testnet reference deployment of the ERC-8183 agentic-commerce
+    standard.</p>
+  </section>
+</main>
+
+<footer>
+  <p>Veil — encrypted agent agreements on Arc. Testnet only. No privacy claims beyond the table
+  above.</p>
+</footer>
+</body>
+</html>
