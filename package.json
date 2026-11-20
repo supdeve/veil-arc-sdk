@@ -71,5 +71,10 @@
   "publishConfig": {
     "access": "public",
     "provenance": true
+  },
+  "devDependencies": {
+    "@types/node": "22.19.11",
+    "tsx": "4.23.13",
+    "typescript": "5.9.3"
   }
 }
